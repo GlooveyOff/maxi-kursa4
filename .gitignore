@@ -26,3 +26,7 @@ Thumbs.db
 *.sqlite3
 *.log
 docs/~$*
+
+# Reference / source materials (not part of project)
+пку.txt
+Титульный лист МВЕК КП.docx
