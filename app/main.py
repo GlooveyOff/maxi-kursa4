@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 
 from app.database import Base, engine
-from app.routers import auth, users, categories, courses, lessons, enrollments
+from app.routers import auth, users, categories, courses, lessons, enrollments, progress
+import app.models.progress  # noqa: F401  чтоб таблица создалась
 
 
 app = FastAPI(title="EduPlatform API")
@@ -15,6 +16,7 @@ app.include_router(categories.router)
 app.include_router(courses.router)
 app.include_router(lessons.router)
 app.include_router(enrollments.router)
+app.include_router(progress.router)
 
 
 @app.get("/")
