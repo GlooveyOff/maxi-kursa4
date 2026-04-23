@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -11,9 +11,39 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 
 @router.get("/", response_model=list[CourseOut])
-def list_courses(db: Session = Depends(get_db)):
-    # показываем только опубликованные курсы
-    return db.query(Course).filter(Course.is_published == True).all()
+def list_courses(
+    db: Session = Depends(get_db),
+    q: str | None = Query(None, description="Поиск по названию"),
+    category_id: int | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+    free_only: bool = False,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    query = db.query(Course).filter(Course.is_published == True)
+
+    if q:
+        query = query.filter(Course.title.ilike(f"%{q}%"))
+    if category_id is not None:
+        query = query.filter(Course.category_id == category_id)
+    if min_price is not None:
+        query = query.filter(Course.price >= min_price)
+    if max_price is not None:
+        query = query.filter(Course.price <= max_price)
+    if free_only:
+        query = query.filter(Course.price == 0)
+
+    return query.order_by(Course.created_at.desc()).offset(offset).limit(limit).all()
+
+
+@router.get("/mine", response_model=list[CourseOut])
+def my_courses(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    # курсы, которые я создал (для преподавателя)
+    return db.query(Course).filter(Course.author_id == user.id).order_by(Course.created_at.desc()).all()
 
 
 @router.get("/{course_id}", response_model=CourseOut)
