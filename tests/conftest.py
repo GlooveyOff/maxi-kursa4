@@ -1,3 +1,8 @@
+import os
+# тесты гоняем на sqlite, поэтому env подменяем до импорта приложения
+os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+os.environ["SECRET_KEY"] = "test_secret"
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -7,7 +12,6 @@ from app.main import app
 from app.database import Base, get_db
 
 
-# Тесты гоняем на SQLite (in-memory не работает с разными коннектами, делаем файл)
 TEST_DB_URL = "sqlite:///./test.db"
 
 engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
